@@ -2048,6 +2048,11 @@ func (a *App) UpdateOAuthUserAttrs(userData io.Reader, user *model.User, provide
 		}
 	}
 
+	if oauthUser.Roles != user.Roles {
+		user.Roles = oauthUser.Roles
+		userAttrsChanged = true
+	}
+
 	if user.DeleteAt > 0 {
 		// Make sure they are not disabled
 		user.DeleteAt = 0

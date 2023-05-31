@@ -1040,6 +1040,8 @@ type SSOSettings struct {
 	DiscoveryEndpoint *string `access:"authentication_openid"` // telemetry: none
 	ButtonText        *string `access:"authentication_openid"` // telemetry: none
 	ButtonColor       *string `access:"authentication_openid"` // telemetry: none
+	SystemAdminGroup  *string `access:"authentication_openid"` // telemetry: none
+	SystemUserGroup   *string `access:"authentication_openid"` // telemetry: none
 }
 
 func (s *SSOSettings) setDefaults(scope, authEndpoint, tokenEndpoint, userAPIEndpoint, buttonColor string) {
@@ -1081,6 +1083,14 @@ func (s *SSOSettings) setDefaults(scope, authEndpoint, tokenEndpoint, userAPIEnd
 
 	if s.ButtonColor == nil {
 		s.ButtonColor = NewString(buttonColor)
+	}
+
+	if s.SystemAdminGroup == nil {
+		s.SystemAdminGroup = NewString("")
+	}
+
+	if s.SystemUserGroup == nil {
+		s.SystemUserGroup = NewString("")
 	}
 }
 
