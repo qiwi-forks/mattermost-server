@@ -1030,18 +1030,19 @@ func (s *AnalyticsSettings) SetDefaults() {
 }
 
 type SSOSettings struct {
-	Enable            *bool   `access:"authentication_openid"`
-	Secret            *string `access:"authentication_openid"` // telemetry: none
-	Id                *string `access:"authentication_openid"` // telemetry: none
-	Scope             *string `access:"authentication_openid"` // telemetry: none
-	AuthEndpoint      *string `access:"authentication_openid"` // telemetry: none
-	TokenEndpoint     *string `access:"authentication_openid"` // telemetry: none
-	UserAPIEndpoint   *string `access:"authentication_openid"` // telemetry: none
-	DiscoveryEndpoint *string `access:"authentication_openid"` // telemetry: none
-	ButtonText        *string `access:"authentication_openid"` // telemetry: none
-	ButtonColor       *string `access:"authentication_openid"` // telemetry: none
-	SystemAdminGroup  *string `access:"authentication_openid"` // telemetry: none
-	SystemUserGroup   *string `access:"authentication_openid"` // telemetry: none
+	Enable              *bool   `access:"authentication_openid"`
+	Secret              *string `access:"authentication_openid"` // telemetry: none
+	Id                  *string `access:"authentication_openid"` // telemetry: none
+	Scope               *string `access:"authentication_openid"` // telemetry: none
+	AuthEndpoint        *string `access:"authentication_openid"` // telemetry: none
+	TokenEndpoint       *string `access:"authentication_openid"` // telemetry: none
+	UserAPIEndpoint     *string `access:"authentication_openid"` // telemetry: none
+	DiscoveryEndpoint   *string `access:"authentication_openid"` // telemetry: none
+	ButtonText          *string `access:"authentication_openid"` // telemetry: none
+	ButtonColor         *string `access:"authentication_openid"` // telemetry: none
+	EnableGroupsMapping *bool   `access:"authentication_openid"` // telemetry: none
+	SystemAdminGroup    *string `access:"authentication_openid"` // telemetry: none
+	SystemUserGroup     *string `access:"authentication_openid"` // telemetry: none
 }
 
 func (s *SSOSettings) setDefaults(scope, authEndpoint, tokenEndpoint, userAPIEndpoint, buttonColor string) {
@@ -1083,6 +1084,10 @@ func (s *SSOSettings) setDefaults(scope, authEndpoint, tokenEndpoint, userAPIEnd
 
 	if s.ButtonColor == nil {
 		s.ButtonColor = NewString(buttonColor)
+	}
+
+	if s.EnableGroupsMapping == nil {
+		s.EnableGroupsMapping = NewBool(false)
 	}
 
 	if s.SystemAdminGroup == nil {

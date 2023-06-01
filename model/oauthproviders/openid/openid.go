@@ -17,6 +17,7 @@ import (
 
 const SystemAdminRoleName = "system_admin"
 const SystemUserRoleName = "system_user"
+const GuestRoleName = "guest"
 
 type CacheData struct {
 	Service  string
@@ -69,7 +70,15 @@ func (o *OpenIdProvider) userFromOpenIdUser(u *OpenIdUser) *model.User {
 	user.AuthData = new(string)
 	*user.AuthData = o.getAuthData(u)
 
-	return o.updateUserRoles(user, u)
+	if *o.CacheData.Settings.EnableGroupsMapping {
+		user = o.updateUserRoles(user, u)
+	}
+
+	if user.Roles == "" {
+		user.Roles = SystemUserRoleName
+	}
+
+	return user
 }
 
 func (o *OpenIdProvider) updateUserRoles(user *model.User, oid *OpenIdUser) *model.User {
@@ -93,6 +102,11 @@ func (o *OpenIdProvider) updateUserRoles(user *model.User, oid *OpenIdUser) *mod
 	}
 
 	user.Roles = strings.Join(mappedRoles, " ")
+
+	if user.Roles == "" {
+		user.Roles = GuestRoleName
+	}
+
 	return user
 }
 
