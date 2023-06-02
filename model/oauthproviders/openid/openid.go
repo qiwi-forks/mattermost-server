@@ -12,7 +12,12 @@ import (
 
 	"github.com/mattermost/mattermost-server/v6/einterfaces"
 	"github.com/mattermost/mattermost-server/v6/model"
+	"golang.org/x/exp/slices"
 )
+
+const SystemAdminRoleName = "system_admin"
+const SystemUserRoleName = "system_user"
+const GuestRoleName = "guest"
 
 type CacheData struct {
 	Service  string
@@ -34,13 +39,14 @@ type OpenIdProvider struct {
 }
 
 type OpenIdUser struct {
-	Id        string `json:"sub"`
-	Oid       string `json:"oid"` //Office 365 only
-	FirstName string `json:"given_name"`
-	LastName  string `json:"family_name"`
-	Name      string `json:"name"`
-	Nickname  string `json:"nickname"`
-	Email     string `json:"email"`
+	Id        string   `json:"sub"`
+	Oid       string   `json:"oid"` //Office 365 only
+	FirstName string   `json:"given_name"`
+	LastName  string   `json:"family_name"`
+	Name      string   `json:"name"`
+	Nickname  string   `json:"nickname"`
+	Email     string   `json:"email"`
+	Groups    []string `json:"groups"`
 }
 
 func init() {
@@ -63,6 +69,43 @@ func (o *OpenIdProvider) userFromOpenIdUser(u *OpenIdUser) *model.User {
 
 	user.AuthData = new(string)
 	*user.AuthData = o.getAuthData(u)
+
+	if *o.CacheData.Settings.EnableGroupsMapping {
+		user = o.updateUserRoles(user, u)
+	}
+
+	if user.Roles == "" {
+		user.Roles = SystemUserRoleName
+	}
+
+	return user
+}
+
+func (o *OpenIdProvider) updateUserRoles(user *model.User, oid *OpenIdUser) *model.User {
+	systemUserGroupName := strings.TrimSpace(*o.CacheData.Settings.SystemUserGroup)
+	systemAdminGroupName := strings.TrimSpace(*o.CacheData.Settings.SystemAdminGroup)
+
+	if systemUserGroupName == "" || systemAdminGroupName == "" {
+		return user
+	}
+
+	groupsRolesMap := make(map[string]string)
+	groupsRolesMap[systemUserGroupName] = SystemUserRoleName
+	groupsRolesMap[systemAdminGroupName] = SystemAdminRoleName
+
+	var mappedRoles []string
+
+	for group, role := range groupsRolesMap {
+		if slices.Contains(oid.Groups, group) {
+			mappedRoles = append(mappedRoles, role)
+		}
+	}
+
+	user.Roles = strings.Join(mappedRoles, " ")
+
+	if user.Roles == "" {
+		user.Roles = GuestRoleName
+	}
 
 	return user
 }
