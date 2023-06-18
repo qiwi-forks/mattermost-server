@@ -1830,11 +1830,6 @@ func updateChannelScheme(c *Context, w http.ResponseWriter, r *http.Request) {
 
 	audit.AddEventParameter(auditRec, "scheme_id", *schemeID)
 
-	if c.App.Channels().License() == nil {
-		c.Err = model.NewAppError("Api4.UpdateChannelScheme", "api.channel.update_channel_scheme.license.error", nil, "", http.StatusForbidden)
-		return
-	}
-
 	if !c.App.SessionHasPermissionTo(*c.AppContext.Session(), model.PermissionManageSystem) {
 		c.SetPermissionError(model.PermissionManageSystem)
 		return
@@ -1959,11 +1954,6 @@ func channelMemberCountsByGroup(c *Context, w http.ResponseWriter, r *http.Reque
 }
 
 func getChannelModerations(c *Context, w http.ResponseWriter, r *http.Request) {
-	if c.App.Channels().License() == nil {
-		c.Err = model.NewAppError("Api4.GetChannelModerations", "api.channel.get_channel_moderations.license.error", nil, "", http.StatusForbidden)
-		return
-	}
-
 	c.RequireChannelId()
 	if c.Err != nil {
 		return
@@ -1996,11 +1986,6 @@ func getChannelModerations(c *Context, w http.ResponseWriter, r *http.Request) {
 }
 
 func patchChannelModerations(c *Context, w http.ResponseWriter, r *http.Request) {
-	if c.App.Channels().License() == nil {
-		c.Err = model.NewAppError("Api4.patchChannelModerations", "api.channel.patch_channel_moderations.license.error", nil, "", http.StatusForbidden)
-		return
-	}
-
 	c.RequireChannelId()
 	if c.Err != nil {
 		return
