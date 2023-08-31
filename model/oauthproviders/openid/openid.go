@@ -41,8 +41,8 @@ type OpenIdProvider struct {
 type OpenIdUser struct {
 	Id        string   `json:"sub"`
 	Oid       string   `json:"oid"` //Office 365 only
-	FirstName string   `json:"given_name"`
-	LastName  string   `json:"family_name"`
+	FirstName string   `json:"givenname"`
+	LastName  string   `json:"surname"`
 	Name      string   `json:"name"`
 	Nickname  string   `json:"nickname"`
 	Email     string   `json:"email"`
@@ -145,16 +145,8 @@ func (u *OpenIdUser) GetIdentifier() string {
 }
 
 func (o *OpenIdProvider) GetUserFromJSON(data io.Reader, tokenUser *model.User) (*model.User, error) {
-	oid, err := openIDUserFromJSON(data)
-	if err != nil {
-		return nil, err
-	}
-	jsonUser := o.userFromOpenIdUser(oid)
-
-	if tokenUser != nil {
-		jsonUser = o.combineUsers(jsonUser, tokenUser)
-	}
-	return jsonUser, nil
+	// поскольку не ходим на /userinfo эндпойнт, возвращаем ранее десериализованного пользователя из idtoken'а
+	return tokenUser, nil
 }
 
 func (o *OpenIdProvider) combineUsers(jsonUser *model.User, tokenUser *model.User) *model.User {

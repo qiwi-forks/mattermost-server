@@ -551,7 +551,10 @@ func (a *App) RevokeAccessToken(token string) *model.AppError {
 }
 
 func (a *App) CompleteOAuth(c *request.Context, service string, body io.ReadCloser, teamID string, props map[string]string, tokenUser *model.User) (*model.User, *model.AppError) {
-	defer body.Close()
+	// костыль для того, чтобы не ходить на /userinfo эндпойнт при использовании oidc
+	if service != model.ServiceOpenid {
+		defer body.Close()
+	}
 
 	action := props["action"]
 
@@ -593,9 +596,13 @@ func (a *App) LoginByOAuth(c *request.Context, service string, userData io.Reade
 	}
 
 	buf := bytes.Buffer{}
-	if _, err := buf.ReadFrom(userData); err != nil {
-		return nil, model.NewAppError("LoginByOAuth2", "api.user.login_by_oauth.parse.app_error",
-			map[string]any{"Service": service}, "", http.StatusBadRequest)
+
+	// костыль для того, чтобы не ходить на /userinfo эндпойнт при использовании oidc
+	if service != model.ServiceOpenid {
+		if _, err := buf.ReadFrom(userData); err != nil {
+			return nil, model.NewAppError("LoginByOAuth2", "api.user.login_by_oauth.parse.app_error",
+				map[string]any{"Service": service}, "", http.StatusBadRequest)
+		}
 	}
 
 	authUser, err1 := provider.GetUserFromJSON(bytes.NewReader(buf.Bytes()), tokenUser)
@@ -887,6 +894,11 @@ func (a *App) AuthorizeOAuthUser(w http.ResponseWriter, r *http.Request, service
 		if err != nil {
 			return nil, "", stateProps, nil, model.NewAppError("AuthorizeOAuthUser", "api.user.authorize_oauth_user.token_failed.app_error", nil, "", http.StatusInternalServerError).Wrap(err)
 		}
+	}
+
+	// костыль для того, чтобы не ходить на /userinfo эндпойнт при использовании oidc
+	if service == model.ServiceOpenid {
+		return nil, teamID, stateProps, userFromToken, nil
 	}
 
 	req, requestErr = http.NewRequest("GET", *sso.UserAPIEndpoint, strings.NewReader(""))
